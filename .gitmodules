@@ -1,0 +1,3 @@
+[submodule "tuya-iot-core-sdkk"]
+	path = tuya-iot-core-sdkk
+	url = https://github.com/tuya/tuya-iot-core-sdk
