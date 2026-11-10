@@ -58,3 +58,7 @@ int handle_cpu_info(void){
     printf("CPU: %" PRId64 "\n", times.steal);
     return 0;
 }
+
+int handle_cpu_percentage(){
+    
+}
