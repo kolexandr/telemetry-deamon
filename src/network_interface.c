@@ -4,7 +4,33 @@
 #include <stdlib.h>
 #include <net/if.h>
 #include <arpa/inet.h>
+#include <inttypes.h>
 #include "network_interface.h"
+
+static int get_network_counter(const char *interface, const char *counter, uint64_t *value){
+    char path[256];
+
+    snprintf(path, sizeof(path), "/sys/class/net/%s/statistics/%s", interface, counter);
+    
+    FILE *file = fopen(path, "r");
+    if (file == NULL){
+        fprintf(stderr, "Error: failed to open the file");
+        return -1;
+    }
+
+    unsigned long long result;
+
+    if(fscanf(file, "%llu", &result) != 1){
+        fclose(file);
+        return -1;
+    }
+
+    *value = (uint64_t) result; 
+    fclose(file);
+
+    return 0;
+}
+
 // struct network_interface **network_interface
 int get_network_interfaces(void){
     struct ifaddrs *network_interfaces = NULL;
@@ -36,8 +62,8 @@ int get_network_interfaces(void){
         char ip_address[INET6_ADDRSTRLEN];
         char netmask[INET6_ADDRSTRLEN];
 
-        const void *ip;
-        const void *mask;
+        const void *ip = NULL;
+        const void *mask = NULL;
 
         if (family == AF_INET){
             struct sockaddr_in *ipv4 = (struct sockaddr_in *)next_addr->ifa_addr;
@@ -57,9 +83,19 @@ int get_network_interfaces(void){
             goto error;
         }
 
+
+        uint64_t received = 0;
+        uint64_t transmitted = 0;
+
+        if ((get_network_counter(next_addr->ifa_name, "rx_bytes", &received)) != 0 || (get_network_counter(next_addr->ifa_name, "tx_bytes", &transmitted)) != 0){
+            continue;  
+        }
+
         printf("Inteface name: %s\n", next_addr->ifa_name);
         printf("Ip address: %s\n", ip_address);
         printf("Net mask: %s\n\n", netmask);
+        printf("Received bytes: %" PRIu64 "\n", received);
+        printf("Transmitted bytes: %" PRIu64 "\n", transmitted);
     }
 
     freeifaddrs(network_interfaces);
@@ -81,7 +117,3 @@ void free_network_interface(struct network_interface *network_interface){
     }
     network_interface = NULL;
 }
-
-// static uint64_t get_network_counter(const char *interface, const char *counter){
-//     return 0;
-// }

@@ -5,8 +5,7 @@
 #include <sys/sysinfo.h>
 #include <stdint.h>
 
-struct system_time {
-    // time_t time;
+struct system_time{
     uint64_t time;
 };
 
