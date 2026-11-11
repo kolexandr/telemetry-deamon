@@ -1,5 +1,7 @@
 CC := gcc
-CFLAGS := -Wall -Werror -Wextra -Iinclude -MMD -MP
+CFLAGS := -Wall -Werror -Wextra -Iinclude -MMD -MP 
+LDFLAGS := -lcjson
+
 
 SRC_DIR := src
 OBJ_DIR := build
@@ -13,7 +15,7 @@ DEP_FILES := $(OBJ_FILES:.o=.d)
 all : $(TARGET)
 
 $(TARGET) : $(OBJ_FILES)
-	$(CC) $(CFLAGS) $^ -o $@
+	$(CC) $(CFLAGS) $^ -o $@ $(LDFLAGS)
 
 $(OBJ_FILES) : $(OBJ_DIR)/%.o : $(SRC_DIR)/%.c | $(OBJ_DIR)
 	$(CC) $(CFLAGS) -c $< -o $@

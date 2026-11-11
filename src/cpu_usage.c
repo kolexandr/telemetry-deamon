@@ -1,5 +1,3 @@
-// check proc/stat file probably
-
 #include <stdio.h>
 #include <inttypes.h>
 #include "cpu_usage.h"
