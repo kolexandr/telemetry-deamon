@@ -31,19 +31,35 @@ static int get_network_counter(const char *interface, const char *counter, uint6
     return 0;
 }
 
-// struct network_interface **network_interface
-int get_network_interfaces(void){
+void print_interfaces(struct network_interface *interface){
+    if (interface == NULL){
+        return;
+    }
+
+    while(interface != NULL){
+        printf("Interface name: %s\n", interface->name);
+        printf("Ip address: %s\n", interface->ip);
+        printf("Net mask: %s\n\n", interface->netmask);
+        printf("Received bytes: %" PRIu64 "\n", interface->received_data_amount);
+        printf("Transmitted bytes: %" PRIu64 "\n\n", interface->transmitted_data_amount);
+        interface = interface->next;
+    }
+}
+
+int get_network_interfaces(struct network_interface **n_interface){
+    if (n_interface == NULL){
+        return -1;
+    }
     struct ifaddrs *network_interfaces = NULL;
     if (getifaddrs(&network_interfaces) == -1){
         perror("Ifaddrs error ");
         return -1;
     }
+    free_network_interface(*n_interface);
+    
 
-    // network_interface = malloc(sizeof(struct network_interface));
-    // if(network_interface == NULL){
-    //     fprintf(stderr, "Error: failed to allocate the network interface on the heap\n");
-    //     return 1;
-    // }
+    *n_interface = NULL;
+    struct network_interface *tail_interface = NULL;
 
     for (struct ifaddrs *next_addr = network_interfaces; next_addr != NULL; next_addr = next_addr->ifa_next){
         if (next_addr->ifa_addr == NULL || next_addr->ifa_netmask == NULL){
@@ -58,9 +74,6 @@ int get_network_interfaces(void){
         if (family != AF_INET && family != AF_INET6){
             continue;
         }
-
-        char ip_address[INET6_ADDRSTRLEN];
-        char netmask[INET6_ADDRSTRLEN];
 
         const void *ip = NULL;
         const void *mask = NULL;
@@ -78,24 +91,34 @@ int get_network_interfaces(void){
             mask = &netmaskv6->sin6_addr;
         }
 
-        if ((inet_ntop(family, ip, ip_address, sizeof(ip_address))) == NULL || (inet_ntop(family, mask, netmask, sizeof(netmask))) == NULL){
+        struct network_interface *new_interface = calloc(1, sizeof(struct network_interface));
+
+        if (new_interface == NULL){
+            fprintf(stderr, "Error: failed to allocate heap memory\n");
+            goto error;
+        }
+
+        if ((inet_ntop(family, ip, new_interface->ip, sizeof(new_interface->ip))) == NULL || (inet_ntop(family, mask, new_interface->netmask, sizeof(new_interface->netmask))) == NULL){
             perror("Inet_top error ");
             goto error;
         }
 
 
-        uint64_t received = 0;
-        uint64_t transmitted = 0;
+        snprintf(new_interface->name, sizeof(new_interface->name), "%s", next_addr->ifa_name);
 
-        if ((get_network_counter(next_addr->ifa_name, "rx_bytes", &received)) != 0 || (get_network_counter(next_addr->ifa_name, "tx_bytes", &transmitted)) != 0){
-            continue;  
+        if ((get_network_counter(next_addr->ifa_name, "rx_bytes", &new_interface->received_data_amount)) != 0 || (get_network_counter(next_addr->ifa_name, "tx_bytes", &new_interface->transmitted_data_amount)) != 0){
+            fprintf(stderr, "Error: failed to read network counter\n");  
+            goto error;
         }
 
-        printf("Inteface name: %s\n", next_addr->ifa_name);
-        printf("Ip address: %s\n", ip_address);
-        printf("Net mask: %s\n\n", netmask);
-        printf("Received bytes: %" PRIu64 "\n", received);
-        printf("Transmitted bytes: %" PRIu64 "\n", transmitted);
+
+        if (*n_interface == NULL){
+            *n_interface = new_interface;
+        } else {
+            tail_interface->next = new_interface;
+        }
+
+        tail_interface = new_interface;
     }
 
     freeifaddrs(network_interfaces);
@@ -103,17 +126,22 @@ int get_network_interfaces(void){
 
 error:
     freeifaddrs(network_interfaces);
-    // free_network_interface();
+    free_network_interface(*n_interface);
+    *n_interface = NULL;
     return -1;
     
 }
 
-void free_network_interface(struct network_interface *network_interface){
-    struct network_interface *temp;
-    while(network_interface != NULL){
-        temp = network_interface->next;
-        free(network_interface);
-        network_interface = temp;
+void free_network_interface(struct network_interface *n_interface){
+    if (n_interface == NULL){
+        return;
     }
-    network_interface = NULL;
+    
+    struct network_interface *temp;
+    while(n_interface != NULL){
+        temp = n_interface->next;
+        free(n_interface);
+        n_interface = temp;
+    }
+    n_interface = NULL;
 }

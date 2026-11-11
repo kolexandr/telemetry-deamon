@@ -18,11 +18,12 @@ struct cpu_usage{
     double cpu_percentage;
 };
 
-// struct cpu_info
 int get_cpu_info(struct cpu_time *times);
 
 // double calculate_usage(struct cpu_time *previous, struct cpu_time *current);
 
-int handle_cpu_info();
+// int handle_cpu_percentage();
+
+void print_cpu_info(struct cpu_time *times);
 
 #endif

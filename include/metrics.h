@@ -6,14 +6,18 @@
 #include "ram_memory.h"
 #include "cpu_usage.h"
 
-struct statistics{
-    memory_info ram_memory;
-    system_time uptime;
-    cpu_usage cpu_usage;
+struct metrics {
+    struct memory_info ram_memory;
+    struct system_time uptime;
+    struct network_interface *interfaces;
+    //change to cpu_usage
+    struct cpu_time cpu_time;
 };
 
-int set_metrics(void);
+int collect_metrics(struct metrics *metrics);
 
-int collect_metrics(void);
+void print_metrics(struct metrics *metrics);
+
+void free_metrics(struct metrics *metrics);
 
 #endif

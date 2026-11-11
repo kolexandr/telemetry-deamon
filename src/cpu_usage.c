@@ -43,22 +43,22 @@ int get_cpu_info(struct cpu_time *times){
 
 // }
 
-int handle_cpu_info(void){
-    struct cpu_time times;
-    if (get_cpu_info(&times) != 0){
+void print_cpu_info(struct cpu_time *times){
+    if (get_cpu_info(times) != 0){
         fprintf(stderr, "Error: failed to read cpu info\n");
+        return;
     }
-    printf("CPU: %" PRId64 "\n", times.user);
-    printf("CPU: %" PRId64 "\n", times.nice);
-    printf("CPU: %" PRId64 "\n", times.system);
-    printf("CPU: %" PRId64 "\n", times.idle);
-    printf("CPU: %" PRId64 "\n", times.iowait);
-    printf("CPU: %" PRId64 "\n", times.irq);
-    printf("CPU: %" PRId64 "\n", times.softirq);
-    printf("CPU: %" PRId64 "\n", times.steal);
-    return 0;
+    printf("CPU: %" PRId64 "\n", times->user);
+    printf("CPU: %" PRId64 "\n", times->nice);
+    printf("CPU: %" PRId64 "\n", times->system);
+    printf("CPU: %" PRId64 "\n", times->idle);
+    printf("CPU: %" PRId64 "\n", times->iowait);
+    printf("CPU: %" PRId64 "\n", times->irq);
+    printf("CPU: %" PRId64 "\n", times->softirq);
+    printf("CPU: %" PRId64 "\n", times->steal);
+    return;
 }
 
-int handle_cpu_percentage(){
+// int handle_cpu_percentage(){
     
-}
+// }

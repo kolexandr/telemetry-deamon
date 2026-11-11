@@ -11,4 +11,6 @@ struct system_time{
 
 int get_system_time(struct sysinfo *system_info, struct system_time *system_time);
 
+void print_system_time(struct system_time system_time);
+
 #endif
