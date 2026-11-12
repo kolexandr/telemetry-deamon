@@ -1,32 +1,8 @@
-CC := gcc
-CFLAGS := -Wall -Werror -Wextra -Iinclude -MMD -MP 
-LDFLAGS := -lcjson
-
-
-SRC_DIR := src
-OBJ_DIR := build
-
-TARGET := monitor
-
-SRC_FILES := $(wildcard $(SRC_DIR)/*.c)
-OBJ_FILES := $(SRC_FILES:src/%.c=$(OBJ_DIR)/%.o)
-DEP_FILES := $(OBJ_FILES:.o=.d)
-
-all : $(TARGET)
-
-$(TARGET) : $(OBJ_FILES)
-	$(CC) $(CFLAGS) $^ -o $@ $(LDFLAGS)
-
-$(OBJ_FILES) : $(OBJ_DIR)/%.o : $(SRC_DIR)/%.c | $(OBJ_DIR)
-	$(CC) $(CFLAGS) -c $< -o $@
-
-$(OBJ_DIR) :
-	mkdir -p $@
+all :
+	cmake -S . -B build
+	cmake --build build --verbose
 
 .PHONY : all clean
 
--include $(DEP_FILES) 
-
-clean :
-	rm -f $(OBJ_FILES) $(DEP_FILES)
-	rm -rf $(OBJ_DIR)
+clean:
+	rm -rf build
