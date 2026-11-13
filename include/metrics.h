@@ -10,8 +10,7 @@ struct metrics {
     struct memory_info ram_memory;
     struct system_time uptime;
     struct network_interface *interfaces;
-    //change to cpu_usage
-    struct cpu_time cpu_time;
+    struct cpu_usage cpu_usage;
 };
 
 int collect_metrics(struct metrics *metrics);

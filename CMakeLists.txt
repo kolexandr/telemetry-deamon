@@ -35,6 +35,7 @@ add_executable(monitor
     src/network_interface.c
     src/system_time.c
     src/tuya_client.c
+    src/log_system.c
     ${LINK_SDK_SOURCES}
 )
 
@@ -58,4 +59,5 @@ target_link_libraries(monitor PRIVATE
     platform_port
     utils_modules
     cjson
+    m
 )

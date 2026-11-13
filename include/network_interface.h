@@ -10,8 +10,8 @@ struct network_interface{
     char name[IFNAMSIZ];
     char ip[INET6_ADDRSTRLEN];
     char netmask[INET6_ADDRSTRLEN];
-    uint64_t transmitted_data_amount;
     uint64_t received_data_amount;
+    uint64_t transmitted_data_amount;
     struct network_interface *next;
 };
 

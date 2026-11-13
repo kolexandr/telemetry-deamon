@@ -7,6 +7,5 @@ char *metrics_to_payload(struct metrics *metrics);
 
 void free_payload(char *payload);
 
-void print_payload(char *payload);
 
 #endif

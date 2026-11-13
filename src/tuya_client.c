@@ -6,11 +6,13 @@
 #include "tuya_cacert.h"
 
 #include "tuya_client.h"
+#include "config.h"
 
 // accept product ID, device ID, device secret in function
-const char productId[] = "7jvnvlgnik6prmly";
-const char deviceId[] = "262fc26e16c62ad133o6zk";
-const char deviceSecret[] = "xZLvICp28VCANxME";
+// const char productId[] = "7jvnvlgnik6prmly";
+// const char deviceId[] = "262fc26e16c62ad133o6zk";
+// const char deviceSecret[] = "xZLvICp28VCANxME";
+
 
 tuya_mqtt_context_t client_instance;
 // tuya_mqtt_context_t *context, void *user_data
@@ -42,16 +44,16 @@ static void on_messages(tuya_mqtt_context_t *context, void *user_data, const tuy
     printf("\r\n");
 }
 
-int send_data_tuya(tuya_mqtt_context_t *client, char *payload){
+int send_data_tuya(tuya_mqtt_context_t *client, char *payload, struct arguments *arguments){
     if (client == NULL || payload == NULL){
         return -1;
     }
-    return tuyalink_thing_property_report(client, deviceId, payload);
+    return tuyalink_thing_property_report(client, arguments->i , payload);
 }
 
 
 
-tuya_mqtt_context_t *establish_connection(){
+tuya_mqtt_context_t *establish_connection(struct arguments *arguments){
     int ret = OPRT_OK;
     tuya_mqtt_context_t *client = &client_instance;
 
@@ -60,8 +62,8 @@ tuya_mqtt_context_t *establish_connection(){
         .port = 8883,
         .cacert = tuya_cacert_pem,
         .cacert_len = sizeof(tuya_cacert_pem),
-        .device_id = deviceId,
-        .device_secret = deviceSecret,
+        .device_id = arguments->i,
+        .device_secret = arguments->s,
         .keepalive = 100,
         .timeout_ms = 2000,
         .on_connected = on_connect,

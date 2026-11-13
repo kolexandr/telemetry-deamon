@@ -4,9 +4,16 @@
 #include "ram_memory.h"
 
 int get_memory_info(struct sysinfo *system_info, struct memory_info *memory_info){
-    // change it
-    memory_info->total_ram = system_info->totalram / (1024ULL * 1024UL);
-    memory_info->free_ram = system_info->freeram / (1024ULL * 1024UL);
+    if (system_info == NULL || memory_info == NULL){
+        return -1;
+    }
+    
+    uint64_t total_bytes = (uint64_t)system_info->totalram * system_info->mem_unit;
+
+    uint64_t free_bytes = (uint64_t)system_info->freeram * system_info->mem_unit;
+
+    memory_info->total_ram = total_bytes / (1024ULL * 1024UL);
+    memory_info->free_ram = free_bytes / (1024ULL * 1024UL);
 
     return 0;
 }
