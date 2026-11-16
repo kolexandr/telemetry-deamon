@@ -3,7 +3,7 @@
 #include <time.h>
 
 #include "metrics.h"
-#include "log_system.h"
+#include "log_utils.h"
 
 char *metrics_to_payload(struct metrics *metrics){
     if (metrics == NULL){
@@ -24,28 +24,28 @@ char *metrics_to_payload(struct metrics *metrics){
 
     cJSON_AddNumberToObject(root, "Cpu_usage", metrics->cpu_usage.cpu_percentage);
 
-    cJSON *network_interfaces = cJSON_AddArrayToObject(root, "Network_interfaces");
+    // cJSON *network_interfaces = cJSON_AddArrayToObject(root, "Network_interfaces");
 
-    if (network_interfaces == NULL){
-        log_error("Failed to create 'network_interfaces' in JSON\n");
-        goto error;
-    }
+    // if (network_interfaces == NULL){
+    //     log_error("Failed to create 'network_interfaces' in JSON\n");
+    //     goto error;
+    // }
 
-    while (metrics->interfaces != NULL){
-        cJSON *interface = cJSON_CreateObject();
-        if (interface == NULL){
-            log_error("Failed to create 'interface' in JSON\n");
-            goto error;
-        }
-        cJSON_AddStringToObject(interface, "name", metrics->interfaces->name);
-        cJSON_AddStringToObject(interface, "ip", metrics->interfaces->ip);
-        cJSON_AddStringToObject(interface, "netmask", metrics->interfaces->netmask);
-        cJSON_AddNumberToObject(interface, "received_data_amount", (double)metrics->interfaces->received_data_amount);
-        cJSON_AddNumberToObject(interface, "transmitted_data_amount", (double)metrics->interfaces->transmitted_data_amount);
+    // while (metrics->interfaces != NULL){
+    //     cJSON *interface = cJSON_CreateObject();
+    //     if (interface == NULL){
+    //         log_error("Failed to create 'interface' in JSON\n");
+    //         goto error;
+    //     }
+    //     cJSON_AddStringToObject(interface, "name", metrics->interfaces->name);
+    //     cJSON_AddStringToObject(interface, "ip", metrics->interfaces->ip);
+    //     cJSON_AddStringToObject(interface, "netmask", metrics->interfaces->netmask);
+    //     cJSON_AddNumberToObject(interface, "received_data_amount", (double)metrics->interfaces->received_data_amount);
+    //     cJSON_AddNumberToObject(interface, "transmitted_data_amount", (double)metrics->interfaces->transmitted_data_amount);
     
-        cJSON_AddItemToArray(network_interfaces, interface);
-        metrics->interfaces = metrics->interfaces->next;
-    }
+    //     cJSON_AddItemToArray(network_interfaces, interface);
+    //     metrics->interfaces = metrics->interfaces->next;
+    // }
     
     char *payload = cJSON_PrintUnformatted(root);
     cJSON_Delete(root);
@@ -57,10 +57,11 @@ error:
 }
 
 void free_payload(char *payload){
-    if (payload != NULL){
-        log_trace("Payload was freed");
-        cJSON_free(payload);
+    if (payload == NULL){
+        return;
     }
+    cJSON_free(payload);
+    log_trace("Payload was freed");
 }
 
 // void print_payload(char *payload){

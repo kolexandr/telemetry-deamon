@@ -1,5 +1,5 @@
-#ifndef LOG_SYSTEM_H
-#define LOG_SYSTEM_H
+#ifndef LOG_UTILS_H
+#define LOG_UTILS_H
 
 void configure_log();
 

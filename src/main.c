@@ -7,27 +7,36 @@
 #include "payload.h"
 #include "tuya_client.h"
 #include "config.h"
-#include "log_system.h"
+#include "log_utils.h"
+#include "signal_utils.h"
 
 int main(int argc, char **argv){
-    configure_log();
-
     struct arguments arguments = {0};
-    config_parse(argc, argv, &arguments);
     tuya_mqtt_context_t *client;
     struct metrics metrics = {0};
     char *payload;
 
+    configure_log();
+    configure_signals();
+    config_parse(argc, argv, &arguments);
+
+
+    if (arguments.daemon == 1){
+        daemonize();
+    }
+
     // make error handling
     client = establish_connection(&arguments);
-    log_debug("Connection was establish OLEKSANDR");
 
     if (client == NULL){
         log_critical("Unable to connect to Tuya iot cloud");
         return 1;
     }
 
-    while(1){
+
+    log_info("Connected successfully to Tuya server");
+
+    while(!is_interrupted()){
         
         if (collect_metrics(&metrics) != 0){
             log_error("Unable to collect metrics");
@@ -39,26 +48,26 @@ int main(int argc, char **argv){
         payload = metrics_to_payload(&metrics);
 
         if (payload == NULL){
-            log_error("Failed to create payload");
-        }
-
-        log_trace(payload);
-
-        if (payload == NULL){
-            log_error("Unable to generate payload");
+            log_error("Failed to generate payload");
             continue;
         }
 
+        log_debug(payload);
+
         send_data_tuya(client, payload, &arguments);
+        
         free_payload(payload);
-    
+        free_metrics(&metrics);
+
         sleep(15);
     }
 
-// cleanup:
+    // free_metrics(&metrics);
+    // free_payload(payload);
+    log_info("The system shut down, safe exit");
+    disconnect_tuya(client);
+    log_info("Connection with Tuya server was disconnected");
 
-    free_metrics(&metrics);
-    free_payload(payload);
     close_log();
     return 0;
 }

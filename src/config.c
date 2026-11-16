@@ -1,10 +1,10 @@
-// pass arguments
 #include <stdlib.h>
 #include <argp.h>
 #include <stdio.h>
 #include <config.h>
 
-#include "log_system.h"
+#include "daemon.h"
+#include "log_utils.h"
 
 static char doc[] = "Tuya daemon monitoring";
 
@@ -62,10 +62,6 @@ int config_parse(int argc, char **argv, struct arguments *arguments){
         log_critical("Critical arguments were missing");
         exit(EXIT_FAILURE);
     }
-    // TODO enable daemon mode
-    // if(arguments.daemon){
-        
-    // }
 
     return EXIT_SUCCESS;
 } 

@@ -8,4 +8,6 @@ int send_data_tuya(tuya_mqtt_context_t *client, char *payload, struct arguments 
 
 tuya_mqtt_context_t *establish_connection(struct arguments *arguments);
 
+void disconnect_tuya(tuya_mqtt_context_t *client);
+
 #endif

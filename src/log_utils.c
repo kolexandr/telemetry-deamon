@@ -1,9 +1,9 @@
 #include <syslog.h>
-#include "log_system.h"
+#include "log_utils.h"
 
 
 void configure_log(){
-    // setlogmask (LOG_UPTO(LOG_DEBUG));
+    setlogmask (LOG_UPTO(LOG_DEBUG));
     openlog("MONITORING", LOG_CONS | LOG_PID | LOG_NDELAY, LOG_LOCAL0);
 }
 

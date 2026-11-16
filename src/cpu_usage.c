@@ -2,7 +2,7 @@
 #include <inttypes.h>
 #include <unistd.h>
 #include <math.h>
-#include <log_system.h>
+#include <log_utils.h>
 #include <string.h>
 
 #include "cpu_usage.h"

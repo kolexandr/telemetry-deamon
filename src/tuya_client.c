@@ -77,9 +77,10 @@ tuya_mqtt_context_t *establish_connection(struct arguments *arguments){
     ret = tuya_mqtt_connect(client);
     assert(ret == OPRT_OK);
 
-    // for (;;){
-    //     tuya_mqtt_loop(client);
-    //     tuyalink_thing_property_report(client, deviceId, payload);
-    // }
     return client;
+}
+
+void disconnect_tuya(tuya_mqtt_context_t *client){
+    tuya_mqtt_disconnect(client);
+    tuya_mqtt_deinit(client);
 }

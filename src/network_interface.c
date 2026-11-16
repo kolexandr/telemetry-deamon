@@ -55,7 +55,7 @@ int get_network_interfaces(struct network_interface **n_interface){
         perror("Ifaddrs error ");
         return -1;
     }
-    free_network_interface(*n_interface);
+    // free_network_interface(*n_interface);
     
 
     *n_interface = NULL;
