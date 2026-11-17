@@ -18,7 +18,6 @@ struct cpu_usage{
     double cpu_percentage;
 };
 
-void print_cpu_info(struct cpu_usage *cpu_usage);
 
 int get_cpu_info(struct cpu_usage *cpu_usage);
 

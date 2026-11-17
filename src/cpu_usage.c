@@ -8,27 +8,6 @@
 #include "cpu_usage.h"
 
 
-// handle all prints in log in one function
-void print_cpu_info(struct cpu_usage *cpu_usage){
-    if (cpu_usage == NULL){
-        log_error("Invalid input received for parameter 'cpu_usage'\n");
-        return;
-    }
-    // char percentage[20] = sprintf(percentage, "%f", cpu_usage->cpu_percentage);
-    // char strncat("Cpu percentage: ", percentage, sizeof(percentage));
-
-    // printf("Cpu percentage: %.2f\n", cpu_usage->cpu_percentage);
-    // printf("CPU: %" PRId64 "\n", times->user);
-    // printf("CPU: %" PRId64 "\n", times->nice);
-    // printf("CPU: %" PRId64 "\n", times->system);
-    // printf("CPU: %" PRId64 "\n", times->idle);
-    // printf("CPU: %" PRId64 "\n", times->iowait);
-    // printf("CPU: %" PRId64 "\n", times->irq);
-    // printf("CPU: %" PRId64 "\n", times->softirq);
-    // printf("CPU: %" PRId64 "\n", times->steal);
-    return;
-}
-
 static int read_cpu_info(struct cpu_time *times){
     FILE *file = fopen("/proc/stat", "r");
     char line[500];

@@ -1,6 +1,6 @@
 # update Cmake to make it more versatile
 
-cmake_minimum_required(VERSION 3.2.0)
+cmake_minimum_required(VERSION 3.5)
 
 project(tuya_daemon_monitoring
     VERSION 1.0
@@ -12,7 +12,8 @@ set(OBJ_DIR build)
 
 set(CMAKE_C_STANDARD 17)
 set(CMAKE_C_STANDARD_REQUIRED ON)
-set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR})
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${PROJECT_SOURCE_DIR})
+set(CMAKE_)
 set(TUYA_SDK_DIR "${CMAKE_SOURCE_DIR}/tuya-iot-core-sdkk")
 
 add_compile_options(

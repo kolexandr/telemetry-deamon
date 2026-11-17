@@ -1,9 +1,52 @@
 #include <stdio.h>
 #include <cjson/cJSON.h>
 #include <time.h>
+#include <stdlib.h>
+#include <string.h>
 
 #include "metrics.h"
 #include "log_utils.h"
+
+int write_to_file(FILE *file, char *text){
+    if (file == NULL || text == NULL){
+        log_error("Invalid arguments for writing to file");
+        return -1;
+    }
+
+    if (fprintf(file, "%s\n", text) < 0){
+        return 1;
+    }
+    return 0;
+}
+
+char *convert_tuya_json_to_text(char *data){
+    cJSON *json = cJSON_Parse(data);
+    
+    if (json == NULL){
+        log_error("The object is not json");
+        return NULL;
+    }
+
+    cJSON *params = cJSON_GetObjectItemCaseSensitive(json, "inputParams");
+    cJSON *text = cJSON_GetObjectItemCaseSensitive(params, "text");
+
+    char *response = NULL;
+    if (cJSON_IsString(text) && text->valuestring != NULL){
+        size_t size = strlen(text->valuestring) + 1; 
+        if ((response = malloc(size)) != NULL){
+            memcpy(response, text->valuestring, size);
+        }
+    }
+
+    cJSON_Delete(json);
+    return response;
+}
+
+void free_tuya_response_json(char *response){
+    if (response != NULL){
+        free(response);
+    }
+}
 
 char *metrics_to_payload(struct metrics *metrics){
     if (metrics == NULL){
@@ -24,28 +67,27 @@ char *metrics_to_payload(struct metrics *metrics){
 
     cJSON_AddNumberToObject(root, "Cpu_usage", metrics->cpu_usage.cpu_percentage);
 
-    // cJSON *network_interfaces = cJSON_AddArrayToObject(root, "Network_interfaces");
+    cJSON *network_interfaces = cJSON_AddArrayToObject(root, "Network_interfaces");
 
-    // if (network_interfaces == NULL){
-    //     log_error("Failed to create 'network_interfaces' in JSON\n");
-    //     goto error;
-    // }
+    if (network_interfaces == NULL){
+        log_error("Failed to create 'network_interfaces' in JSON\n");
+        goto error;
+    }
 
-    // while (metrics->interfaces != NULL){
-    //     cJSON *interface = cJSON_CreateObject();
-    //     if (interface == NULL){
-    //         log_error("Failed to create 'interface' in JSON\n");
-    //         goto error;
-    //     }
-    //     cJSON_AddStringToObject(interface, "name", metrics->interfaces->name);
-    //     cJSON_AddStringToObject(interface, "ip", metrics->interfaces->ip);
-    //     cJSON_AddStringToObject(interface, "netmask", metrics->interfaces->netmask);
-    //     cJSON_AddNumberToObject(interface, "received_data_amount", (double)metrics->interfaces->received_data_amount);
-    //     cJSON_AddNumberToObject(interface, "transmitted_data_amount", (double)metrics->interfaces->transmitted_data_amount);
+    for (struct network_interface *current = metrics->interfaces; current != NULL; current = current->next){
+        cJSON *interface = cJSON_CreateObject();
+        if (interface == NULL){
+            log_error("Failed to create 'interface' in JSON\n");
+            goto error;
+        }
+        cJSON_AddStringToObject(interface, "name", current->name);
+        cJSON_AddStringToObject(interface, "ip", current->ip);
+        cJSON_AddStringToObject(interface, "netmask", current->netmask);
+        cJSON_AddNumberToObject(interface, "received_data_amount", (double)current->received_data_amount);
+        cJSON_AddNumberToObject(interface, "transmitted_data_amount", (double)current->transmitted_data_amount);
     
-    //     cJSON_AddItemToArray(network_interfaces, interface);
-    //     metrics->interfaces = metrics->interfaces->next;
-    // }
+        cJSON_AddItemToArray(network_interfaces, interface);
+    }
     
     char *payload = cJSON_PrintUnformatted(root);
     cJSON_Delete(root);

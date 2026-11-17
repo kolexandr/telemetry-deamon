@@ -4,6 +4,8 @@
 #include "tuyalink_core.h"
 #include "config.h"
 
+void wait_tuya(tuya_mqtt_context_t *client, unsigned int seconds);
+
 int send_data_tuya(tuya_mqtt_context_t *client, char *payload, struct arguments *arguments);
 
 tuya_mqtt_context_t *establish_connection(struct arguments *arguments);

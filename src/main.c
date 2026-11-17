@@ -9,6 +9,7 @@
 #include "config.h"
 #include "log_utils.h"
 #include "signal_utils.h"
+#include "daemon.h"
 
 int main(int argc, char **argv){
     struct arguments arguments = {0};
@@ -40,33 +41,29 @@ int main(int argc, char **argv){
         
         if (collect_metrics(&metrics) != 0){
             log_error("Unable to collect metrics");
+            free_metrics(&metrics);
+            wait_tuya(client, 15);
             continue;
         }
-
-        // print_metrics(&metrics);
 
         payload = metrics_to_payload(&metrics);
 
-        if (payload == NULL){
+        if (payload != NULL){
+            log_debug(payload);
+            send_data_tuya(client, payload, &arguments);
+        } else {
             log_error("Failed to generate payload");
-            continue;
         }
-
-        log_debug(payload);
-
-        send_data_tuya(client, payload, &arguments);
         
         free_payload(payload);
         free_metrics(&metrics);
 
-        sleep(15);
+        wait_tuya(client, 15);
     }
 
-    // free_metrics(&metrics);
-    // free_payload(payload);
     log_info("The system shut down, safe exit");
     disconnect_tuya(client);
-    log_info("Connection with Tuya server was disconnected");
+    log_info("Connection with Tuya server has ended");
 
     close_log();
     return 0;

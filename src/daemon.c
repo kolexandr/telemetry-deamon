@@ -3,7 +3,8 @@
 #include <sys/types.h>
 #include <unistd.h>
 #include <fcntl.h>
-
+#include <stdlib.h>
+#include <string.h>
 
 #include "log_utils.h"
 
@@ -26,16 +27,22 @@ void daemonize(){
         exit(1);
     }
 
-    for (int i = 0; i<1024; i++){
-        close(i);
+    int fd = open("/dev/null", O_RDWR);
+
+    if (fd == -1){
+        exit(1);
     }
 
-    int fd0 = open("/dev/null", O_RDWR);
-    int fd1 = dup(0);
-    int fd2 = dup(0);
-
-    if (fd0 != 0 || fd1 != 1 || fd2 != 2){
+    if (dup2(fd, STDIN_FILENO) == -1 || dup2(fd, STDOUT_FILENO) == -1 || dup2(fd, STDERR_FILENO) == -1){
+        // `
+        if (fd > STDERR_FILENO){
+            close(fd);
+        }
         log_error("Error assigning file descriptors");
         exit(1);
     }
+    if (fd > STDERR_FILENO){
+        close(fd);
+    }
+
 }

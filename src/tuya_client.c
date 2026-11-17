@@ -1,5 +1,6 @@
-// talk to tuya sdk client
+#include <stdio.h>
 #include <assert.h>
+#include <time.h>
 #include "tuyalink_core.h"
 #include "tuya_error_code.h"
 #include "tuya_log.h"
@@ -7,15 +8,31 @@
 
 #include "tuya_client.h"
 #include "config.h"
-
-// accept product ID, device ID, device secret in function
-// const char productId[] = "7jvnvlgnik6prmly";
-// const char deviceId[] = "262fc26e16c62ad133o6zk";
-// const char deviceSecret[] = "xZLvICp28VCANxME";
+#include "signal_utils.h"
+#include "payload.h"
 
 
 tuya_mqtt_context_t client_instance;
-// tuya_mqtt_context_t *context, void *user_data
+
+void wait_tuya(tuya_mqtt_context_t *client, unsigned int seconds){
+    struct timespec start, now;
+    clock_gettime(CLOCK_MONOTONIC, &start);
+
+    while (!is_interrupted()){
+        tuya_mqtt_loop(client);
+
+        clock_gettime(CLOCK_MONOTONIC, &now);
+        double elapsed = (now.tv_sec - start.tv_sec) + (now.tv_nsec - start.tv_nsec) / 1e9;
+
+        if (elapsed >= seconds){
+            break;
+        }
+
+        struct timespec pause = {.tv_nsec = 100000000};
+        nanosleep(&pause, NULL);
+    }
+}
+
 static void on_connect(){
     TY_LOGI("on connected");
 }
@@ -25,22 +42,34 @@ static void on_disconnect(){
 }
 
 static void on_messages(tuya_mqtt_context_t *context, void *user_data, const tuyalink_message_t *msg){
-    TY_LOGI("on message id:%s, type:%d, code:%d", msg->msgid, msg->type, msg->code);
-    switch(msg->type){
-        case THING_TYPE_MODEL_RSP:
-            TY_LOGI("Model data:%s", msg->data_string);
-            break;
-        case THING_TYPE_PROPERTY_SET:
-            TY_LOGI("property set:%s", msg->data_string);
-            break;
-        case THING_TYPE_PROPERTY_REPORT_RSP:
-            break;
-        default:
-            break;
-    }
     (void) context;
     (void) user_data;
-    // TY_LOGI(, user_data);
+    if (msg == NULL || msg->type != THING_TYPE_ACTION_EXECUTE || msg->data_string == NULL){
+        return;
+    }
+
+    TY_LOGI("%d %d", msg->type, msg->code);
+    char *text;
+    text = convert_tuya_json_to_text(msg->data_string);
+    if (text == NULL){
+        TY_LOGI("Failed to display action text");
+        return;
+    }
+    FILE *file = fopen("/tmp/tuya-action.txt", "a");
+    if (file == NULL){
+        free_tuya_response_json(text);
+        return;
+    }
+    if (write_to_file(file, text) != 0){
+        fclose(file);
+        free_tuya_response_json(text);
+        TY_LOGI("Failed to write to /tmp/tuya-action.txt");
+        return;
+    }
+
+
+    fclose(file);
+    free_tuya_response_json(text);
     printf("\r\n");
 }
 
@@ -68,14 +97,21 @@ tuya_mqtt_context_t *establish_connection(struct arguments *arguments){
         .timeout_ms = 2000,
         .on_connected = on_connect,
         .on_disconnect = on_disconnect,
-        .on_messages = on_messages
+        .on_messages = on_messages,
     });
 
-    // TODO handle SIGABRT, free memories before that 
-    assert(ret == OPRT_OK);
+    if (ret != OPRT_OK){
+        TY_LOGE("Tuya initialization failed");
+        return NULL;
+    }
 
     ret = tuya_mqtt_connect(client);
-    assert(ret == OPRT_OK);
+    
+    if (ret != OPRT_OK){
+        TY_LOGE("Tuya connection failed");
+        tuya_mqtt_deinit(client);
+        return NULL;
+    }
 
     return client;
 }
