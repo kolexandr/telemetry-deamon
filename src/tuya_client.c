@@ -1,5 +1,4 @@
 #include <stdio.h>
-#include <assert.h>
 #include <time.h>
 #include "tuyalink_core.h"
 #include "tuya_error_code.h"
@@ -48,14 +47,13 @@ static void on_messages(tuya_mqtt_context_t *context, void *user_data, const tuy
         return;
     }
 
-    TY_LOGI("%d %d", msg->type, msg->code);
     char *text;
     text = convert_tuya_json_to_text(msg->data_string);
     if (text == NULL){
         TY_LOGI("Failed to display action text");
         return;
     }
-    FILE *file = fopen("/tmp/tuya-action.txt", "a");
+    FILE *file = fopen("/tmp/tuya_action.log", "a");
     if (file == NULL){
         free_tuya_response_json(text);
         return;
@@ -63,11 +61,11 @@ static void on_messages(tuya_mqtt_context_t *context, void *user_data, const tuy
     if (write_to_file(file, text) != 0){
         fclose(file);
         free_tuya_response_json(text);
-        TY_LOGI("Failed to write to /tmp/tuya-action.txt");
+        TY_LOGI("Failed to write to /tmp/tuya_action.log");
         return;
     }
 
-
+    TY_LOGI("The message was succesfully saved in /tmp/tuya_action.log");
     fclose(file);
     free_tuya_response_json(text);
     printf("\r\n");

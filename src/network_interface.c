@@ -31,21 +31,6 @@ static int get_network_counter(const char *interface, const char *counter, uint6
     return 0;
 }
 
-void print_interfaces(struct network_interface *interface){
-    if (interface == NULL){
-        return;
-    }
-
-    while(interface != NULL){
-        printf("Interface name: %s\n", interface->name);
-        printf("Ip address: %s\n", interface->ip);
-        printf("Net mask: %s\n\n", interface->netmask);
-        printf("Received bytes: %" PRIu64 "\n", interface->received_data_amount);
-        printf("Transmitted bytes: %" PRIu64 "\n\n", interface->transmitted_data_amount);
-        interface = interface->next;
-    }
-}
-
 int get_network_interfaces(struct network_interface **n_interface){
     if (n_interface == NULL){
         return -1;
@@ -55,7 +40,6 @@ int get_network_interfaces(struct network_interface **n_interface){
         perror("Ifaddrs error ");
         return -1;
     }
-    // free_network_interface(*n_interface);
     
 
     *n_interface = NULL;

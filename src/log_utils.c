@@ -1,5 +1,6 @@
 #include <syslog.h>
 #include "log_utils.h"
+// #include "log.h"
 
 
 void configure_log(){

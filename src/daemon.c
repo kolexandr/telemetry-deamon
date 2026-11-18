@@ -13,14 +13,17 @@ void daemonize(){
 
     if (p < 0){
         log_error("Fork error");
-        exit(1);
+        exit(EXIT_FAILURE);
     }
 
     if (p != 0){
-        exit(0);
+        exit(EXIT_SUCCESS);
     }
 
-    setsid();
+    if (setsid() == -1){
+        log_error("setsid() failed");
+        exit(EXIT_FAILURE);
+    } 
 
     if(chdir("/") < 0){
         log_error("Error changing directory");
@@ -30,19 +33,17 @@ void daemonize(){
     int fd = open("/dev/null", O_RDWR);
 
     if (fd == -1){
-        exit(1);
+        exit(EXIT_FAILURE);
     }
 
     if (dup2(fd, STDIN_FILENO) == -1 || dup2(fd, STDOUT_FILENO) == -1 || dup2(fd, STDERR_FILENO) == -1){
-        // `
-        if (fd > STDERR_FILENO){
-            close(fd);
-        }
+        close(fd);
         log_error("Error assigning file descriptors");
-        exit(1);
+        exit(EXIT_FAILURE);
     }
     if (fd > STDERR_FILENO){
         close(fd);
     }
 
+    log_info("Daemon has started");
 }

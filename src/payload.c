@@ -86,7 +86,15 @@ char *metrics_to_payload(struct metrics *metrics){
         cJSON_AddNumberToObject(interface, "received_data_amount", (double)current->received_data_amount);
         cJSON_AddNumberToObject(interface, "transmitted_data_amount", (double)current->transmitted_data_amount);
     
-        cJSON_AddItemToArray(network_interfaces, interface);
+        char *string_json = cJSON_PrintUnformatted(interface);
+        cJSON_Delete(interface);
+        if (string_json == NULL){
+            goto error;
+        }
+
+        cJSON_AddItemToArray(network_interfaces, cJSON_CreateString(string_json));
+
+        free(string_json);
     }
     
     char *payload = cJSON_PrintUnformatted(root);
@@ -106,8 +114,3 @@ void free_payload(char *payload){
     log_trace("Payload was freed");
 }
 
-// void print_payload(char *payload){
-//     if (payload != NULL){
-//         puts(payload);
-//     }
-// }

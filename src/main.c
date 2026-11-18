@@ -26,7 +26,6 @@ int main(int argc, char **argv){
         daemonize();
     }
 
-    // make error handling
     client = establish_connection(&arguments);
 
     if (client == NULL){
@@ -35,7 +34,7 @@ int main(int argc, char **argv){
     }
 
 
-    log_info("Connected successfully to Tuya server");
+    log_info("Successfully connected to Tuya server");
 
     while(!is_interrupted()){
         

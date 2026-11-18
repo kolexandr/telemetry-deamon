@@ -17,8 +17,6 @@ int collect_metrics(struct metrics *metrics){
         return 1;
     }
 
-
-    // check if we want to continue if some of the metrics was not collected
     if (get_cpu_info(&metrics->cpu_usage) != 0){
         log_error("Failed to collect cpu times\n");
         return 1;
