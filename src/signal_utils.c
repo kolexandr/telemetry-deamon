@@ -41,11 +41,11 @@ int configure_signals(){
         goto error;
     }
 
-    log_info("Signals are configured");
+    log_info_m("Signals are configured");
     return 0;
 
 error:
-    log_error("Failed to configure signals");
+    log_error_m("Failed to configure signals");
     return 1;
 }
 

@@ -4,15 +4,16 @@
 #include <unistd.h>
 #include <fcntl.h>
 #include <stdlib.h>
-#include <string.h>
 
 #include "log_utils.h"
+#include "tuya_client.h"
+#include "config.h"
 
-void daemonize(){    
+void daemonize(struct arguments *config){    
     pid_t p = fork();
 
     if (p < 0){
-        log_error("Fork error");
+        log_error_m("Fork error");
         exit(EXIT_FAILURE);
     }
 
@@ -21,12 +22,12 @@ void daemonize(){
     }
 
     if (setsid() == -1){
-        log_error("setsid() failed");
+        log_error_m("setsid() failed");
         exit(EXIT_FAILURE);
     } 
 
     if(chdir("/") < 0){
-        log_error("Error changing directory");
+        log_error_m("Error changing directory");
         exit(1);
     }
 
@@ -38,12 +39,16 @@ void daemonize(){
 
     if (dup2(fd, STDIN_FILENO) == -1 || dup2(fd, STDOUT_FILENO) == -1 || dup2(fd, STDERR_FILENO) == -1){
         close(fd);
-        log_error("Error assigning file descriptors");
+        log_error_m("Error assigning file descriptors");
         exit(EXIT_FAILURE);
     }
     if (fd > STDERR_FILENO){
         close(fd);
     }
 
-    log_info("Daemon has started");
+    log_info_m("Daemon has started");
+
+    if (config->daemon == 1){
+        logging_tuya(config);
+    }
 }

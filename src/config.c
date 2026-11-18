@@ -59,7 +59,7 @@ int config_parse(int argc, char **argv, struct arguments *arguments){
     argp_parse(&argp, argc, argv, 0, 0, arguments);
 
     if (arguments->p == NULL || arguments->i == NULL || arguments->s == NULL){
-        log_critical("Critical arguments were missing");
+        log_critical_m("Critical arguments were missing");
         exit(EXIT_FAILURE);
     }
 

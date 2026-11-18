@@ -5,6 +5,8 @@
 #include <net/if.h>
 #include <arpa/inet.h>
 #include <inttypes.h>
+
+#include "log_utils.h"
 #include "network_interface.h"
 
 static int get_network_counter(const char *interface, const char *counter, uint64_t *value){
@@ -14,7 +16,7 @@ static int get_network_counter(const char *interface, const char *counter, uint6
     
     FILE *file = fopen(path, "r");
     if (file == NULL){
-        fprintf(stderr, "Error: failed to open the file");
+        log_error_m("Failed to open the file for network counter");
         return -1;
     }
 
@@ -37,7 +39,7 @@ int get_network_interfaces(struct network_interface **n_interface){
     }
     struct ifaddrs *network_interfaces = NULL;
     if (getifaddrs(&network_interfaces) == -1){
-        perror("Ifaddrs error ");
+        log_error_m("Ifaddrs error");
         return -1;
     }
     
@@ -78,12 +80,12 @@ int get_network_interfaces(struct network_interface **n_interface){
         struct network_interface *new_interface = calloc(1, sizeof(struct network_interface));
 
         if (new_interface == NULL){
-            fprintf(stderr, "Error: failed to allocate heap memory\n");
+            log_error_m("Failed to allocate heap memory");
             goto error;
         }
 
         if ((inet_ntop(family, ip, new_interface->ip, sizeof(new_interface->ip))) == NULL || (inet_ntop(family, mask, new_interface->netmask, sizeof(new_interface->netmask))) == NULL){
-            perror("Inet_top error ");
+            log_error_m("Inet_top error ");
             goto error;
         }
 
@@ -91,7 +93,7 @@ int get_network_interfaces(struct network_interface **n_interface){
         snprintf(new_interface->name, sizeof(new_interface->name), "%s", next_addr->ifa_name);
 
         if ((get_network_counter(next_addr->ifa_name, "rx_bytes", &new_interface->received_data_amount)) != 0 || (get_network_counter(next_addr->ifa_name, "tx_bytes", &new_interface->transmitted_data_amount)) != 0){
-            fprintf(stderr, "Error: failed to read network counter\n");  
+            log_error_m("Failed to read network counter");  
             goto error;
         }
 

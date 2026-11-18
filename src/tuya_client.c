@@ -4,14 +4,78 @@
 #include "tuya_error_code.h"
 #include "tuya_log.h"
 #include "tuya_cacert.h"
+#include "log.h"
 
 #include "tuya_client.h"
 #include "config.h"
 #include "signal_utils.h"
 #include "payload.h"
+#include "log_utils.h"
 
+
+#include <syslog.h>
+
+enum {
+    SDK_TRACE = LOG_TRACE,
+    SDK_DEBUG = LOG_DEBUG,
+    SDK_INFO = LOG_INFO,
+    SDK_WARN = LOG_WARN,
+    SDK_ERROR = LOG_ERROR,
+    SDK_FATAL = LOG_FATAL
+};
+
+#undef LOG_DEBUG
+#undef LOG_INFO
 
 tuya_mqtt_context_t client_instance;
+
+static void tuya_syslog_callback_custom(log_Event *event){
+    int priority;
+
+    switch (event->level){
+        case SDK_TRACE:
+        case SDK_DEBUG:
+            priority = SDK_DEBUG;
+            break;
+        case SDK_INFO:
+            priority = SDK_INFO;
+            break;
+        case SDK_WARN:
+            priority = LOG_WARN;
+            break;
+        case SDK_ERROR:
+            priority = LOG_ERROR;
+            break;
+        case SDK_FATAL:
+            priority = LOG_FATAL;
+            break;
+        default:
+            priority = LOG_NOTICE;
+            break;
+    }
+
+    char message[1024];
+
+    vsnprintf(message, sizeof(message), event->fmt, event->ap);
+
+    syslog(priority, "%s:%d: %s", event->file, event->line, message);
+}
+
+int logging_tuya(struct arguments *config){
+    if (config->daemon != 1){
+        log_set_quiet(false);
+        log_set_level(SDK_DEBUG);
+        return 0;
+    }
+
+    if (log_add_callback(tuya_syslog_callback_custom, NULL, LOG_DEBUG) != 0){
+        log_error_m("Failed to make logging for Tuya");
+        return 1;
+    }
+
+    log_set_quiet(true);
+    return 0;
+}
 
 void wait_tuya(tuya_mqtt_context_t *client, unsigned int seconds){
     struct timespec start, now;
@@ -95,7 +159,7 @@ tuya_mqtt_context_t *establish_connection(struct arguments *arguments){
         .timeout_ms = 2000,
         .on_connected = on_connect,
         .on_disconnect = on_disconnect,
-        .on_messages = on_messages,
+        .on_messages = on_messages
     });
 
     if (ret != OPRT_OK){

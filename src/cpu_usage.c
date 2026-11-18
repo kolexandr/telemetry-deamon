@@ -13,13 +13,12 @@ static int read_cpu_info(struct cpu_time *times){
     char line[500];
 
     if (file == NULL){
-        log_error("Failed to read open file\n");
-        fprintf(stderr, "Error: failed to open file\n");
+        log_error_m("Failed to open file");
         return 1;
     }
 
     if (fgets(line, sizeof(line), file) == NULL){
-        fprintf(stderr, "Error: failed to read a file\n");
+        log_error_m("Failed to read a file");
         goto error;
     }
 
@@ -27,7 +26,7 @@ static int read_cpu_info(struct cpu_time *times){
 
     if ((sscanf(line, "cpu %llu %llu %llu %llu %llu %llu %llu %llu",
         &user, &nice, &system, &idle, &iowait, &irq, &softirq, &steal)) != 8){
-            fprintf(stderr, "Error: failed to read formatted input\n");
+            log_error_m("Failed to read formatted input\n");
             goto error;
     }
 
@@ -50,7 +49,7 @@ error:
 
 double calculate_usage(struct cpu_time *previous, struct cpu_time *current, struct cpu_usage *cpu_usage){
     if (previous == NULL || current == NULL || cpu_usage == NULL){
-        fprintf(stderr, "Error: invalid arguments\n");
+        log_error_m("Invalid arguments");
         return -1;
     }
 
@@ -65,7 +64,7 @@ double calculate_usage(struct cpu_time *previous, struct cpu_time *current, stru
         current->softirq + current->steal;
 
     if (current_total <= previous_total){
-        fprintf(stderr, "Error: invalid CPU time difference\n");
+        log_error_m("Invalid CPU time difference");
         return -1;
     }
 

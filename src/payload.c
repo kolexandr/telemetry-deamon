@@ -9,7 +9,7 @@
 
 int write_to_file(FILE *file, char *text){
     if (file == NULL || text == NULL){
-        log_error("Invalid arguments for writing to file");
+        log_error_m("Invalid arguments for writing to file");
         return -1;
     }
 
@@ -23,7 +23,7 @@ char *convert_tuya_json_to_text(char *data){
     cJSON *json = cJSON_Parse(data);
     
     if (json == NULL){
-        log_error("The object is not json");
+        log_error_m("The object is not json");
         return NULL;
     }
 
@@ -50,12 +50,12 @@ void free_tuya_response_json(char *response){
 
 char *metrics_to_payload(struct metrics *metrics){
     if (metrics == NULL){
-        log_error("Invalid input received for parameter 'metrics'\n");
+        log_error_m("Invalid input received for parameter 'metrics'\n");
         return NULL;
     }
     cJSON *root = cJSON_CreateObject();
     if (root == NULL){
-        log_error("Failed to create root JSON'\n");
+        log_error_m("Failed to create root JSON'\n");
         return NULL;
     }
 
@@ -70,14 +70,14 @@ char *metrics_to_payload(struct metrics *metrics){
     cJSON *network_interfaces = cJSON_AddArrayToObject(root, "Network_interfaces");
 
     if (network_interfaces == NULL){
-        log_error("Failed to create 'network_interfaces' in JSON\n");
+        log_error_m("Failed to create 'network_interfaces' in JSON\n");
         goto error;
     }
 
     for (struct network_interface *current = metrics->interfaces; current != NULL; current = current->next){
         cJSON *interface = cJSON_CreateObject();
         if (interface == NULL){
-            log_error("Failed to create 'interface' in JSON\n");
+            log_error_m("Failed to create 'interface' in JSON\n");
             goto error;
         }
         cJSON_AddStringToObject(interface, "name", current->name);
@@ -111,6 +111,6 @@ void free_payload(char *payload){
         return;
     }
     cJSON_free(payload);
-    log_trace("Payload was freed");
+    log_debug_m("Payload was freed");
 }
 

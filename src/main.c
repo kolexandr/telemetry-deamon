@@ -1,5 +1,4 @@
 #include <stdio.h>
-#include <getopt.h>
 #include <unistd.h>
 #include "tuyalink_core.h"
 
@@ -23,23 +22,23 @@ int main(int argc, char **argv){
 
 
     if (arguments.daemon == 1){
-        daemonize();
+        daemonize(&arguments);
     }
 
     client = establish_connection(&arguments);
 
     if (client == NULL){
-        log_critical("Unable to connect to Tuya iot cloud");
+        log_critical_m("Unable to connect to Tuya iot cloud");
         return 1;
     }
 
 
-    log_info("Successfully connected to Tuya server");
+    log_info_m("Successfully connected to Tuya server");
 
     while(!is_interrupted()){
         
         if (collect_metrics(&metrics) != 0){
-            log_error("Unable to collect metrics");
+            log_error_m("Unable to collect metrics");
             free_metrics(&metrics);
             wait_tuya(client, 15);
             continue;
@@ -48,10 +47,10 @@ int main(int argc, char **argv){
         payload = metrics_to_payload(&metrics);
 
         if (payload != NULL){
-            log_debug(payload);
+            log_debug_m(payload);
             send_data_tuya(client, payload, &arguments);
         } else {
-            log_error("Failed to generate payload");
+            log_error_m("Failed to generate payload");
         }
         
         free_payload(payload);
@@ -60,9 +59,9 @@ int main(int argc, char **argv){
         wait_tuya(client, 15);
     }
 
-    log_info("The system shut down, safe exit");
+    log_info_m("The system shut down, safe exit");
     disconnect_tuya(client);
-    log_info("Connection with Tuya server has ended");
+    log_info_m("Connection with Tuya server has ended");
 
     close_log();
     return 0;

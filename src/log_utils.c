@@ -1,6 +1,5 @@
 #include <syslog.h>
 #include "log_utils.h"
-// #include "log.h"
 
 
 void configure_log(){
@@ -8,27 +7,27 @@ void configure_log(){
     openlog("MONITORING", LOG_CONS | LOG_PID | LOG_NDELAY, LOG_LOCAL0);
 }
 
-void log_error(char *msg){
+void log_error_m(char *msg){
     syslog(LOG_ERR, "%s", msg);
 }
 
-void log_info(char *msg){
+void log_info_m(char *msg){
     syslog(LOG_INFO, "%s", msg);
 }
 
-void log_debug(char *msg){
+void log_debug_m(char *msg){
     syslog(LOG_DEBUG, "%s", msg);
 }
 
-void log_trace(char *msg){
+void log_trace_m(char *msg){
     syslog(LOG_DEBUG, "[TRACE] %s", msg);
 }
 
-void log_warn(char *msg){
+void log_warn_m(char *msg){
     syslog(LOG_WARNING, "%s", msg);
 }
 
-void log_critical(char *msg){
+void log_critical_m(char *msg){
     syslog(LOG_CRIT, "%s", msg);
 }
 

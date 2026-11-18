@@ -1,5 +1,3 @@
-# update Cmake to make it more versatile
-
 cmake_minimum_required(VERSION 3.5)
 
 project(tuya_daemon_monitoring
@@ -8,18 +6,16 @@ project(tuya_daemon_monitoring
 )
 
 set(SRC_DIR src)
-set(OBJ_DIR build)
 
 set(CMAKE_C_STANDARD 17)
 set(CMAKE_C_STANDARD_REQUIRED ON)
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${PROJECT_SOURCE_DIR})
-set(CMAKE_)
 set(TUYA_SDK_DIR "${CMAKE_SOURCE_DIR}/tuya-iot-core-sdkk")
+
 
 add_compile_options(
     -Wall
     -Wextra
-    -Wno-error
 )
 
 find_package(PkgConfig REQUIRED)
@@ -31,7 +27,7 @@ add_executable(monitor
     src/config.c
     src/payload.c
     src/cpu_usage.c
-    src/memory.c
+    src/ram_memory.c
     src/metrics.c
     src/network_interface.c
     src/system_time.c
@@ -41,6 +37,7 @@ add_executable(monitor
     ${LINK_SDK_SOURCES}
 )
 
+
 add_subdirectory(tuya-iot-core-sdkk)
 
 target_include_directories(monitor PRIVATE
@@ -49,7 +46,6 @@ target_include_directories(monitor PRIVATE
     "${TUYA_SDK_DIR}/utils"
     "${TUYA_SDK_DIR}/include"
     "${TUYA_SDK_DIR}/interface"
-    # ${PROJECT_SOURCE_DIR}/tuya-iot-core-sdkk/include
 )
 
 include("${TUYA_SDK_DIR}/tuyaFilePaths.cmake")
