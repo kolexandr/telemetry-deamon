@@ -34,7 +34,7 @@ tuya-iot-core-sdkk - external library for tuya
 
 ## Setup
 
-For starting
+For compiling
 ```
 make
 ```
@@ -43,4 +43,10 @@ For cleaning
 
 ```
 make clean
+```
+
+## Help
+
+```
+./monitor --help
 ```
