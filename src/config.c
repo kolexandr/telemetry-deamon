@@ -2,13 +2,14 @@
 #include <argp.h>
 #include <stdio.h>
 #include <config.h>
+#include "ctype.h"
 
 #include "daemon.h"
 #include "log_utils.h"
 
 static char doc[] = "Tuya daemon monitoring";
 
-static char args_doc[] = "ARG1 ARG2";
+static char args_doc[] = "ARG1";
 
 static struct argp_option options[] = {
     {"productId",       'p',    "VALUE",    0,  "Specify productId from tuya iot platform", 0},
@@ -48,7 +49,28 @@ static struct argp argp = {
     .doc = doc
 };
 
+static int is_empty_string(char *text){
+    if (text == NULL || *text == '\0'){
+        return 1;
+    }
+
+    
+    while(*text){
+        if (isspace((unsigned char)*text)){
+            return 1;
+        }
+        text++;
+    }
+
+    return 0;
+}
+
 int config_parse(int argc, char **argv, struct arguments *arguments){
+
+    if (argc == 1){
+        argp_help(&argp, stderr, ARGP_HELP_USAGE, argv[0]);
+        exit(EXIT_FAILURE);
+    }
 
     arguments->p = NULL;
     arguments->i = NULL;
@@ -58,10 +80,10 @@ int config_parse(int argc, char **argv, struct arguments *arguments){
     
     argp_parse(&argp, argc, argv, 0, 0, arguments);
 
-    if (arguments->p == NULL || arguments->i == NULL || arguments->s == NULL){
-        log_critical_m("Critical arguments were missing");
+    if (is_empty_string(arguments->p) == 1 || is_empty_string(arguments->i) == 1 || is_empty_string(arguments->s) == 1){
+        log_critical_m("Argument/s can not be empty or include spaces");
         exit(EXIT_FAILURE);
     }
 
     return EXIT_SUCCESS;
-} 
+}

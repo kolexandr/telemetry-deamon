@@ -57,25 +57,18 @@ int get_network_interfaces(struct network_interface **n_interface){
         }
 
         int family = next_addr->ifa_addr->sa_family;
-        if (family != AF_INET && family != AF_INET6){
+        if (family != AF_INET){
             continue;
         }
 
         const void *ip = NULL;
         const void *mask = NULL;
 
-        if (family == AF_INET){
-            struct sockaddr_in *ipv4 = (struct sockaddr_in *)next_addr->ifa_addr;
-            struct sockaddr_in *netmaskv4 = (struct sockaddr_in *)next_addr->ifa_netmask;
-            ip = &ipv4->sin_addr;
-            mask = &netmaskv4->sin_addr;
-        } else if (family == AF_INET6){
-            struct sockaddr_in6 *ipv6 = (struct sockaddr_in6 *)next_addr->ifa_addr;
-            struct sockaddr_in6 *netmaskv6 = (struct sockaddr_in6 *)next_addr->ifa_netmask;
-            
-            ip = &ipv6->sin6_addr;
-            mask = &netmaskv6->sin6_addr;
-        }
+        struct sockaddr_in *ipv4 = (struct sockaddr_in *)next_addr->ifa_addr;
+        struct sockaddr_in *netmaskv4 = (struct sockaddr_in *)next_addr->ifa_netmask;
+        ip = &ipv4->sin_addr;
+        mask = &netmaskv4->sin_addr;
+    
 
         struct network_interface *new_interface = calloc(1, sizeof(struct network_interface));
 

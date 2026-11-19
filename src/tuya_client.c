@@ -29,6 +29,31 @@ enum {
 
 tuya_mqtt_context_t client_instance;
 
+static int action_save_text(tuyalink_message_t *msg){
+    char *text;
+    text = convert_tuya_json_to_text(msg->data_string);
+    if (text == NULL){
+        TY_LOGI("Failed to display action text");
+        return;
+    }
+    FILE *file = fopen("/tmp/tuya_action.log", "a");
+    if (file == NULL){
+        free_tuya_response_json(text);
+        return;
+    }
+    if (write_to_file(file, text) != 0){
+        fclose(file);
+        free_tuya_response_json(text);
+        return 1;
+    }
+
+    TY_LOGI("The message was succesfully saved in /tmp/tuya_action.log");
+    fclose(file);
+    free_tuya_response_json(text);
+    printf("\r\n");
+    return 0;
+}
+
 static void tuya_syslog_callback_custom(log_Event *event){
     int priority;
 
@@ -111,28 +136,22 @@ static void on_messages(tuya_mqtt_context_t *context, void *user_data, const tuy
         return;
     }
 
-    char *text;
-    text = convert_tuya_json_to_text(msg->data_string);
-    if (text == NULL){
-        TY_LOGI("Failed to display action text");
-        return;
-    }
-    FILE *file = fopen("/tmp/tuya_action.log", "a");
-    if (file == NULL){
-        free_tuya_response_json(text);
-        return;
-    }
-    if (write_to_file(file, text) != 0){
-        fclose(file);
-        free_tuya_response_json(text);
-        TY_LOGI("Failed to write to /tmp/tuya_action.log");
+    char *action_code;
+
+    if ((action_code = find_action_tuya(msg->data_string)) == NULL){
+        log_error_m("Failed to indentify action code");
         return;
     }
 
-    TY_LOGI("The message was succesfully saved in /tmp/tuya_action.log");
-    fclose(file);
-    free_tuya_response_json(text);
-    printf("\r\n");
+    if (strcmp(action_code, "save_text") == 0){
+        if (action_save_text(msg) != 0){
+            log_error_m("Failed to perform save_text action");
+            goto cleanup_on_messages;
+        }
+    }
+
+cleanup_on_messages:
+    free_action_tuya(action_code);
 }
 
 int send_data_tuya(tuya_mqtt_context_t *client, char *payload, struct arguments *arguments){

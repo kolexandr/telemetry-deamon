@@ -36,17 +36,18 @@ tuya-iot-core-sdkk - external library for tuya
 
 For compiling
 ```
-make
+cmake -S . -B build
+cmake --build build
 ```
 
 For cleaning
 
 ```
-make clean
+cmake --build build --target clean
 ```
 
 ## Help
 
 ```
-./monitor --help
+./tuyad --help
 ```

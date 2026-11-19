@@ -21,7 +21,7 @@ add_compile_options(
 find_package(PkgConfig REQUIRED)
 pkg_check_modules(CJSON REQUIRED IMPORTED_TARGET libcjson)
 
-add_executable(monitor
+add_executable(tuyad
     src/main.c
     src/daemon.c
     src/config.c
@@ -40,7 +40,7 @@ add_executable(monitor
 
 add_subdirectory(tuya-iot-core-sdkk)
 
-target_include_directories(monitor PRIVATE
+target_include_directories(tuyad PRIVATE
     ${PROJECT_SOURCE_DIR}/include
     ${LINK_SDK_INCLUDE_PUBLIC_DIRS}
     "${TUYA_SDK_DIR}/utils"
@@ -50,7 +50,7 @@ target_include_directories(monitor PRIVATE
 
 include("${TUYA_SDK_DIR}/tuyaFilePaths.cmake")
 
-target_link_libraries(monitor PRIVATE
+target_link_libraries(tuyad PRIVATE
     PkgConfig::CJSON
     link_core
     middleware_implementation

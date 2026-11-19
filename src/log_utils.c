@@ -4,7 +4,7 @@
 
 void configure_log(){
     setlogmask (LOG_UPTO(LOG_DEBUG));
-    openlog("MONITORING", LOG_CONS | LOG_PID | LOG_NDELAY, LOG_LOCAL0);
+    openlog("TUYAD", LOG_CONS | LOG_PID | LOG_NDELAY, LOG_LOCAL0);
 }
 
 void log_error_m(char *msg){
@@ -19,9 +19,6 @@ void log_debug_m(char *msg){
     syslog(LOG_DEBUG, "%s", msg);
 }
 
-void log_trace_m(char *msg){
-    syslog(LOG_DEBUG, "[TRACE] %s", msg);
-}
 
 void log_warn_m(char *msg){
     syslog(LOG_WARNING, "%s", msg);

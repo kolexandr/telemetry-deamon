@@ -7,6 +7,46 @@
 #include "metrics.h"
 #include "log_utils.h"
 
+static char *get_string_from_json(cJSON *text){
+    char *response; 
+    if (cJSON_IsString(text) && text->valuestring != NULL){
+        size_t size = strlen(text->valuestring) + 1; 
+        if ((response = malloc(size)) != NULL){
+            memcpy(response, text->valuestring, size);
+            return response;
+        }
+    }
+    return NULL;
+}
+
+char *find_action_tuya(char *data){
+    cJSON *json = cJSON_Parse(data);
+
+    if (json == NULL){
+        log_error_m("The object is not json | Action tuya");
+        return -1;
+    }
+
+    cJSON *action = cJSON_GetObjectItemCaseSensitive(json, "actionCode");
+
+    char *response;
+    if ((response = get_string_from_json(action)) == NULL){
+        log_error_m("Failed to parse string from json");
+        cJSON_Delete(json);
+        return 1;
+    }
+
+
+    cJSON_Delete(json);
+    return response;
+}
+
+void free_action_tuya(char *data){
+    if (data != NULL){
+        free(data);
+    }
+}
+
 int write_to_file(FILE *file, char *text){
     if (file == NULL || text == NULL){
         log_error_m("Invalid arguments for writing to file");
@@ -23,19 +63,18 @@ char *convert_tuya_json_to_text(char *data){
     cJSON *json = cJSON_Parse(data);
     
     if (json == NULL){
-        log_error_m("The object is not json");
+        log_error_m("The object is not json | Convert json to text");
         return NULL;
     }
 
     cJSON *params = cJSON_GetObjectItemCaseSensitive(json, "inputParams");
     cJSON *text = cJSON_GetObjectItemCaseSensitive(params, "text");
 
-    char *response = NULL;
-    if (cJSON_IsString(text) && text->valuestring != NULL){
-        size_t size = strlen(text->valuestring) + 1; 
-        if ((response = malloc(size)) != NULL){
-            memcpy(response, text->valuestring, size);
-        }
+    char *response;
+    if ((response = get_string_from_json(text)) == NULL){
+        log_error_m("Failed to parse string from json");
+        cJSON_Delete(json);
+        return 1;
     }
 
     cJSON_Delete(json);
@@ -59,15 +98,15 @@ char *metrics_to_payload(struct metrics *metrics){
         return NULL;
     }
 
-    cJSON_AddNumberToObject(root, "Uptime", (double)metrics->uptime.time);
+    cJSON_AddNumberToObject(root, "uptime", (double)metrics->uptime.time);
 
-    cJSON_AddNumberToObject(root, "Total_ram_mib", (double)metrics->ram_memory.total_ram);
+    cJSON_AddNumberToObject(root, "total_ram_mib", (double)metrics->ram_memory.total_ram);
 
-    cJSON_AddNumberToObject(root, "Free_ram_mib", (double)metrics->ram_memory.free_ram);
+    cJSON_AddNumberToObject(root, "free_ram_mib", (double)metrics->ram_memory.free_ram);
 
-    cJSON_AddNumberToObject(root, "Cpu_usage", metrics->cpu_usage.cpu_percentage);
+    cJSON_AddNumberToObject(root, "cpu_usage", metrics->cpu_usage.cpu_percentage);
 
-    cJSON *network_interfaces = cJSON_AddArrayToObject(root, "Network_interfaces");
+    cJSON *network_interfaces = cJSON_AddArrayToObject(root, "network_interfaces");
 
     if (network_interfaces == NULL){
         log_error_m("Failed to create 'network_interfaces' in JSON\n");
